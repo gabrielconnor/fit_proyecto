@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitCorredores - Gestión de Entradas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Estilos personalizados para un mejor look and feel */
+        body { 
+            background-color: #f0f2f5; /* Fondo más suave */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container { 
+            margin-top: 50px; 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 12px; /* Esquinas más redondeadas */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Sombra sutil y elegante */
+        }
+        .table-dark th {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-5 text-center text-primary border-bottom pb-2">
+            <i class="fas fa-running me-2"></i> Gestión de Entradas FitCorredores
+        </h1>
+
+        <button class="btn btn-success mb-3"
+                data-bs-toggle="modal" 
+                data-bs-target="#entryModal"
+                onclick="setupModal(this)"
+                data-action-url="{% url 'entry_create' %}"
+                data-title="Crear Nueva Entrada">
+            <i class="fas fa-plus-circle me-1"></i> Nueva Entrada
+        </button>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover border">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Corredor</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Factor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in entradas %}
+                    <tr>
+                        <td>{{ e.id }}</td>
+                        <td>{{ e.corredor.nombre }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if e.tipo == 'MONTO_BRUTO' %}bg-info text-dark
+                                {% elif e.tipo == 'FACTOR' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ e.tipo }}
+                            </span>
+                        </td>
+                        <td>{{ e.monto|default:"-" }}</td>
+                        <td>{{ e.factor|default:"-" }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-1"
+                                data-bs-toggle="modal"
+                                data-bs-target="#entryModal"
+                                onclick="setupModal(this)"
+                                data-action-url="{% url 'entry_update' pk=e.id %}"
+                                data-title="Editar Entrada #{{ e.id }}"
+                                data-corredor="{{ e.corredor.id }}"
+                                data-tipo="{{ e.tipo }}"
+                                data-monto="{{ e.monto|default:"" }}"
+                                data-factor="{{ e.factor|default:"" }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <button class="btn btn-sm btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-delete-url="{% url 'entry_delete' pk=e.id %}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="entryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="entryForm" method="POST" action="">
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_corredor" class="form-label">Corredor:</label>
+                            <select name="corredor" id="id_corredor" class="form-select" required>
+                                {% for c in corredores %}
+                                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_tipo" class="form-label">Tipo:</label>
+                            <select name="tipo" id="id_tipo" class="form-select" required>
+                                <option value="MONTO_BRUTO">Monto Bruto</option>
+                                <option value="FACTOR">Factor</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_monto" class="form-label">Monto:</label>
+                            <input type="number" name="monto" id="id_monto" class="form-control" step="1">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_factor" class="form-label">Factor:</label>
+                            <input type="number" step="any" name="factor" id="id_factor" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-1"></i> Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center">¿Estás seguro de que deseas eliminar este registro?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteForm" method="POST" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function setupModal(button) {
+            const actionUrl = button.getAttribute('data-action-url');
+            const title = button.getAttribute('data-title');
+            // Usamos un valor por defecto vacío ("") para que el null de Django no cause problemas
+            const corredor = button.getAttribute('data-corredor') || ''; 
+            const tipo = button.getAttribute('data-tipo') || 'MONTO_BRUTO';
+            const monto = button.getAttribute('data-monto') || '';
+            const factor = button.getAttribute('data-factor') || '';
+
+            document.getElementById('modalTitle').innerText = title;
+            const form = document.getElementById('entryForm');
+            form.action = actionUrl;
+
+            document.getElementById('id_corredor').value = corredor;
+            document.getElementById('id_tipo').value = tipo;
+            document.getElementById('id_monto').value = monto;
+            document.getElementById('id_factor').value = factor;
+        }
+
+        // Manejo del Modal de Eliminar
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const deleteUrl = button.getAttribute('data-delete-url');
+            document.getElementById('deleteForm').action = deleteUrl;
+        });
+    </script>
+</body>
+</html>
