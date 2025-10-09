@@ -11,7 +11,9 @@ El sistema implementa las cuatro operaciones CRUD (Crear, Leer, Actualizar, Elim
 
 ## corredores agregados
 * *corredor_prueba:* 
-*  
+*  *francisco:*
+*  *maxilimiano:*
+*  *felipe:*
 
 ## Cómo Ejecutar el Proyecto
 

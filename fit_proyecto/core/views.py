@@ -1,31 +1,20 @@
-# core/views.py (CORREGIDO)
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Entrada, Corredor 
-from django.db import IntegrityError # Añadimos esto para manejar errores de base de datos
+from django.db import IntegrityError 
 
 # =========================================================================
 # 1. LISTAR (READ) y CONTEXTO GLOBAL 
 # =========================================================================
 
 def entry_list(request):
-    """
-    Muestra la lista de entradas y provee la lista de corredores
-    para el modal de Crear/Editar.
-    """
-    # Optimizamos la consulta para evitar múltiples viajes a la DB
     entries = Entrada.objects.all().select_related('corredor').order_by('-created_at')
-    
-    # 🟢 CORRECCIÓN CLAVE: Obtener todos los corredores para el <select> del modal.
     corredores = Corredor.objects.all()
 
     context = {
         'entradas': entries,
         'corredores': corredores,
-        # 'error' se puede agregar aquí si una función POST (create/update) falló
     }
     
-    # Renderizamos el único template unificado
     return render(request, 'entries/list.html', context)
 
 # =========================================================================
@@ -33,13 +22,11 @@ def entry_list(request):
 # =========================================================================
 
 def entry_create(request):
-    """
-    Maneja la lógica POST del modal de creación.
-    """
     if request.method == 'POST':
         try:
             corredor_id = request.POST['corredor']
             tipo = request.POST['tipo']
+            divisa = request.POST['divisa']  # <--- NUEVO
             monto_str = request.POST.get('monto') 
             factor_str = request.POST.get('factor') 
 
@@ -50,19 +37,17 @@ def entry_create(request):
             Entrada.objects.create(
                 corredor=corredor,
                 tipo=tipo,
+                divisa=divisa,  # <--- NUEVO
                 monto=monto,
                 factor=factor,
                 tipo_ingreso=True
             )
-            # Redirigir al listado después de crear exitosamente
             return redirect('entry_list')
         
         except (ValueError, KeyError, IntegrityError) as e:
-
-            error_msg = f"Error al crear: {e}. Inténtelo de nuevo."
+            # error_msg = f"Error al crear: {e}. Inténtelo de nuevo." # Dejamos la redirección simple sin pasar mensaje
             return redirect('entry_list') 
 
-    # Si alguien intenta acceder por GET directamente, lo redirigimos a la lista
     return redirect('entry_list') 
 
 # =========================================================================
@@ -70,15 +55,13 @@ def entry_create(request):
 # =========================================================================
 
 def entry_update(request, pk):
-    """
-    Maneja la lógica POST del modal de edición.
-    """
     entry = get_object_or_404(Entrada, pk=pk)
 
     if request.method == 'POST':
         try:
             corredor_id = request.POST['corredor']
             entry.tipo = request.POST['tipo']
+            entry.divisa = request.POST['divisa'] # <--- NUEVO
             monto_str = request.POST.get('monto') 
             factor_str = request.POST.get('factor') 
 
@@ -88,15 +71,12 @@ def entry_update(request, pk):
             
             entry.save() 
             
-            # Redirigir al listado después de actualizar exitosamente
             return redirect('entry_list')
         
         except (ValueError, KeyError, IntegrityError) as e:
-            # Si hay un error, redirigimos al listado con un mensaje
-            error_msg = f"Error al actualizar la entrada #{pk}: {e}. Inténtelo de nuevo."
+            # error_msg = f"Error al actualizar la entrada #{pk}: {e}. Inténtelo de nuevo." # Dejamos la redirección simple sin pasar mensaje
             return redirect('entry_list')
 
-    # Si alguien intenta acceder por GET directamente, lo redirigimos a la lista
     return redirect('entry_list')
 
 
@@ -105,15 +85,10 @@ def entry_update(request, pk):
 # =========================================================================
 
 def entry_delete(request, pk):
-    """
-    Maneja la lógica POST del modal de eliminación.
-    """
     entry = get_object_or_404(Entrada, pk=pk)
 
     if request.method == 'POST':
         entry.delete()
-        # Redirigir al listado después de borrar
         return redirect('entry_list')
         
-    # Si alguien intenta acceder por GET directamente, lo redirigimos a la lista
     return redirect('entry_list')

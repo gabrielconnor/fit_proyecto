@@ -51,7 +51,7 @@
                         <th>ID</th>
                         <th>Corredor</th>
                         <th>Tipo</th>
-                        <th>Monto</th>
+                        <th>Divisa</th> <th>Monto</th>
                         <th>Factor</th>
                         <th>Acciones</th>
                     </tr>
@@ -69,7 +69,11 @@
                                 {{ e.tipo }}
                             </span>
                         </td>
-                        <td>{{ e.monto|default:"-" }}</td>
+                        <td>
+                             <span class="badge bg-secondary">
+                                {{ e.divisa }}
+                            </span>
+                        </td> <td>{{ e.monto|default:"-" }}</td>
                         <td>{{ e.factor|default:"-" }}</td>
                         <td>
                             <button class="btn btn-sm btn-primary me-1"
@@ -80,7 +84,7 @@
                                 data-title="Editar Entrada #{{ e.id }}"
                                 data-corredor="{{ e.corredor.id }}"
                                 data-tipo="{{ e.tipo }}"
-                                data-monto="{{ e.monto|default:"" }}"
+                                data-divisa="{{ e.divisa }}" data-monto="{{ e.monto|default:"" }}"
                                 data-factor="{{ e.factor|default:"" }}">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -124,6 +128,15 @@
                             <select name="tipo" id="id_tipo" class="form-select" required>
                                 <option value="MONTO_BRUTO">Monto Bruto</option>
                                 <option value="FACTOR">Factor</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_divisa" class="form-label">Divisa:</label>
+                            <select name="divisa" id="id_divisa" class="form-select" required>
+                                <option value="CLP">Peso Chileno ($)</option>
+                                <option value="PEN">Sol Peruano (S/)</option>
+                                <option value="COP">Peso Colombiano ($)</option>
                             </select>
                         </div>
                         
@@ -172,9 +185,11 @@
         function setupModal(button) {
             const actionUrl = button.getAttribute('data-action-url');
             const title = button.getAttribute('data-title');
-            // Usamos un valor por defecto vacío ("") para que el null de Django no cause problemas
+            
+            
             const corredor = button.getAttribute('data-corredor') || ''; 
             const tipo = button.getAttribute('data-tipo') || 'MONTO_BRUTO';
+            const divisa = button.getAttribute('data-divisa') || 'CLP';
             const monto = button.getAttribute('data-monto') || '';
             const factor = button.getAttribute('data-factor') || '';
 
@@ -182,8 +197,10 @@
             const form = document.getElementById('entryForm');
             form.action = actionUrl;
 
+            // Asignar valores
             document.getElementById('id_corredor').value = corredor;
             document.getElementById('id_tipo').value = tipo;
+            document.getElementById('id_divisa').value = divisa; 
             document.getElementById('id_monto').value = monto;
             document.getElementById('id_factor').value = factor;
         }
