@@ -17,15 +17,15 @@ El sistema implementa las cuatro operaciones CRUD (Crear, Leer, Actualizar, Elim
 
 ## Cómo Ejecutar el Proyecto
 
-1.  *Clonar el repositorio:*
+1.  *Clonar el repositorio desde el master:*
 
-2.  *Crear y Activar el Entorno Virtual:*
+2.  *Crear y Activar el Entorno Virtual*
  
-3.  *Instalar Dependencias:*
+3.  *Instalar Dependencias*
     
-4.  *Aplicar Migraciones y Crear Superusuario:*
+4.  *Aplicar Migraciones y Crear Superusuario*
     
-5.  *Iniciar el Servidor:*
+5.  *Iniciar el Servidor*
     
 El sistema estará disponible en http://127.0.0.1:8000/.
 El panel de administración está en http://127.0.0.1:8000/admin.
