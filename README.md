@@ -26,6 +26,7 @@ El sistema implementa las cuatro operaciones CRUD (Crear, Leer, Actualizar, Elim
 4.  *Aplicar Migraciones y Crear Superusuario*
     
 5.  *Iniciar el Servidor*
+6.  *usuario y contraseña del admin Gabriel 17072004*
     
 El sistema estará disponible en http://127.0.0.1:8000/.
 El panel de administración está en http://127.0.0.1:8000/admin.
